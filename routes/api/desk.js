@@ -57,6 +57,11 @@ router.post("/startUsing", auth, async (req, res) => {
     if (desk.inUse) {
       return res.status(400).json({ msg: "Desk is already in use" });
     }
+    if (profile.credits <= 0) {
+      return res.status(400).json({
+        msg: "Not enough credits available, Add credits to your account",
+      });
+    }
     const deskFields = {
       inUse: true,
       userUsing: req.user.id,
@@ -104,18 +109,33 @@ router.post("/stopUsing", auth, async (req, res) => {
       { $set: { inUse: false, userUsing: null } },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
+
     const profileFields = {
       isActive: false,
       checkoutTime: new Date().getTime(), //A Number, representing the number of milliseconds since midnight January 1, 1970
     };
+    const usage = (
+      (profileFields.checkoutTime - profile.checkinTime) /
+      60000
+    ).toFixed(1); //milliseconds to minutes
+    const cost = ((usage * 5) / 3).toFixed(2);
     await Profile.findOneAndUpdate(
       { user: req.user.id },
       { $set: profileFields },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
-    const usage = (profileFields.checkoutTime - profile.checkinTime) / 60000;
-    const cost = (usage * 5) / 3;
-    res.status(200).json(cost);
+    const updatedProfile = await Profile.findOneAndUpdate(
+      { user: req.user.id },
+      { $inc: { credits: -cost } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+    const data = {
+      usage: usage,
+      cost: cost,
+      previousCredits: profile.credits,
+      currentCredits: updatedProfile.credits,
+    };
+    res.status(200).json(data);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
