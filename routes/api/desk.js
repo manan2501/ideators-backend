@@ -49,16 +49,21 @@ router.post("/startUsing", auth, async (req, res) => {
       user: req.user.id,
     }).populate("user", ["name", "email"]);
     if (!profile) {
-      return res.status(400).json({ msg: "There is no profile for this user" });
+      return res.status(403).json({ msg: "There is no profile for this user" });
+    }
+    if (profile.isBanned) {
+      return res.status(403).json({
+        msg: "You are banned from using this application, contact admin",
+      });
     }
     if (profile.isActive) {
-      return res.status(400).json({ msg: "User already using the desk" });
+      return res.status(403).json({ msg: "User already using the desk" });
     }
     if (desk.inUse) {
-      return res.status(400).json({ msg: "Desk is already in use" });
+      return res.status(403).json({ msg: "Desk is already in use" });
     }
     if (profile.credits <= 0) {
-      return res.status(400).json({
+      return res.status(403).json({
         msg: "Not enough credits available, Add credits to your account",
       });
     }
@@ -103,6 +108,11 @@ router.post("/stopUsing", auth, async (req, res) => {
     }).populate("user", ["name", "email"]);
     if (!profile) {
       return res.status(400).json({ msg: "There is no profile for this user" });
+    }
+    if (profile.isBanned) {
+      return res.status(403).json({
+        msg: "You are banned from using this application, contact admin",
+      });
     }
     await Desk.findOneAndUpdate(
       { deskID: desk.deskID },
