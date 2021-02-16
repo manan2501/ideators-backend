@@ -4,22 +4,26 @@ const Desk = require("../../models/Desk");
 const Profile = require("../../models/Profile");
 const auth = require("../../middleware/auth");
 
-// // @route    GET api/desk/:id
-// // @desc     Create desk with given id
-// // @access   Public
-// router.post("/:id", async (req, res) => {
-//   const deskID = req.params.id;
-//   try {
-//     desk = new Desk({
-//       deskID,
-//     });
-//     await desk.save();
-//     res.status(500).send("Desk created");
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server Error");
-//   }
-// });
+//Uncomment below this if you want to add desk
+/*
+// @route    GET api/desk/:id
+// @desc     Create desk with given id
+// @access   Public
+router.post("/:id", async (req, res) => {
+  const deskID = req.params.id;
+  try {
+    desk = new Desk({
+      deskID,
+    });
+    await desk.save();
+    res.status(500).send("Desk created");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+*/
+//Uncomment above this if you want to add desk
 
 // @route    GET api/desk
 // @desc     Get all desks
