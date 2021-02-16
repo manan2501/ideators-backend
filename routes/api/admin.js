@@ -80,4 +80,58 @@ router.post("/unbanUser", auth, async (req, res) => {
   }
 });
 
+// @route    POST api/admin/forceStop
+// @desc     Forcefully stop a session, if someone leaves without stopping their session.
+// @access   Private
+router.post("/unbanUser", auth, async (req, res) => {
+  try {
+    const myprofile = await Profile.findOne({
+      user: req.user.id,
+    });
+    if (!myprofile.isAdmin) {
+      return res.status(403).json({ msg: "Only for admins" });
+    }
+
+    const deskID = req.body.deskID;
+    const desk = await Desk.findOne({
+      deskID: deskID,
+    });
+    if (!desk.inUse) {
+      return res.status(403).json({ msg: "Desk is not in use" });
+    }
+
+    const userID = desk.userUsing;
+    const profile = await Profile.findOne({ user: userID });
+    const profileFields = {
+      isActive: false,
+      checkoutTime: new Date().getTime(), //A Number, representing the number of milliseconds since midnight January 1, 1970
+    };
+    const usage = (
+      (profileFields.checkoutTime - profile.checkinTime) /
+      60000
+    ).toFixed(1); //milliseconds to minutes
+    const cost = ((usage * 5) / 3).toFixed(2);
+    await Profile.findOneAndUpdate(
+      { user: userID },
+      { $set: profileFields },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+    const updatedProfile = await Profile.findOneAndUpdate(
+      { user: req.user.id },
+      { $inc: { credits: -cost } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+    const data = {
+      usage: usage,
+      cost: cost,
+      previousCredits: profile.credits,
+      currentCredits: updatedProfile.credits,
+    };
+    res.status(200).json(data);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 module.exports = router;
