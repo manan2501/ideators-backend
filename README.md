@@ -1,6 +1,6 @@
-# Ideators-Backend
+# Ideators-Server
 
-This is the backend code for the bigger project currently I am working on.
+This is the backend server code for the bigger project currently I am working on.
 The idea of this project is to optimize the use of co-working space.
 Users can Scan the QR-code of the desk they want to use and start using it.
 At the end of the session, a bill will be generated and credits will be debited from the user's profile.
