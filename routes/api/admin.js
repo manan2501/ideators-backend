@@ -44,7 +44,7 @@ router.post("/banUser", auth, async (req, res) => {
     }
 
     await Profile.findOneAndUpdate(
-      { user: req.body.to },
+      { user: req.body.who },
       { $set: { isBanned: true } },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
@@ -69,7 +69,7 @@ router.post("/unbanUser", auth, async (req, res) => {
     }
 
     await Profile.findOneAndUpdate(
-      { user: req.body.to },
+      { user: req.body.who },
       { $set: { isBanned: false } },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
@@ -83,7 +83,7 @@ router.post("/unbanUser", auth, async (req, res) => {
 // @route    POST api/admin/forceStop
 // @desc     Forcefully stop a session, if someone leaves without stopping their session.
 // @access   Private
-router.post("/unbanUser", auth, async (req, res) => {
+router.post("/forceStop", auth, async (req, res) => {
   try {
     const myprofile = await Profile.findOne({
       user: req.user.id,
@@ -117,8 +117,13 @@ router.post("/unbanUser", auth, async (req, res) => {
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
     const updatedProfile = await Profile.findOneAndUpdate(
-      { user: req.user.id },
+      { user: userID },
       { $inc: { credits: -cost } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+    const updatedDesk = await Desk.findOneAndUpdate(
+      { deskID: deskID },
+      { $set: { inUse: false, userUsing: null } },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
     const data = {
@@ -126,6 +131,7 @@ router.post("/unbanUser", auth, async (req, res) => {
       cost: cost,
       previousCredits: profile.credits,
       currentCredits: updatedProfile.credits,
+      desk: updatedDesk,
     };
     res.status(200).json(data);
   } catch (err) {
