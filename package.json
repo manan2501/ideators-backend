@@ -4,7 +4,7 @@
   "description": "6th-sem DE project of Group-13",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "node server.js"
   },
   "author": "Manan Kevadiya",
   "license": "ISC",
