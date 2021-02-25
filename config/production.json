@@ -1,4 +1,0 @@
-{
-    "mongoURI": "mongodb+srv://manan2501:manan2501@ideators.x84d9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
-    "jwtSecret": "ideators"
-}
